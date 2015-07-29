@@ -99,8 +99,8 @@ BOOL CraycanDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO:  在此添加额外的初始化代码
-	m_tabctrl.InsertItem(0, _T("串口操作"));  //添加参数一选项卡 
-	m_tabctrl.InsertItem(1, _T("网络抓包"));  //添加参数二选项卡
+	m_tabctrl.InsertItem(0, _T("串口操作(Serial)"));  //添加参数一选项卡 
+	m_tabctrl.InsertItem(1, _T("网络抓包(Capturing)"));  //添加参数二选项卡
 	//m_tabctrl.InsertItem(2, _T("数据处理"));  //添加参数三选项卡 
 	m_calib.Create(IDD_CALIBRATION, GetDlgItem(IDC_TAB));
 	m_serial.Create(IDD_SERIALPORT, GetDlgItem(IDC_TAB));
@@ -110,7 +110,7 @@ BOOL CraycanDlg::OnInitDialog()
 	CRect rs;
 	m_tabctrl.GetClientRect(&rs);
 	//调整子对话框在父窗口中的位置
-	rs.top += 40;
+	rs.top += 36;
 	//rs.bottom -= 0;
 	rs.left -=20;
 	//rs.right -= 0;
