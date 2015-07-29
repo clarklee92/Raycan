@@ -224,6 +224,9 @@ BOOL Cserialport::OnInitDialog()
 	m_thresholdnum.AddString(_T("4"));
 	m_thresholdnum.SetItemData(3,4);
 	m_thresholdnum.SetCurSel(0);
+
+	CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
+	Stopsenddata->EnableWindow(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常:  OCX 属性页应返回 FALSE
 }

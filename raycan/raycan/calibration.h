@@ -27,7 +27,7 @@ public:
 	BOOL InitSocket();
 	bool OnSaveas();
 	void TextOut();
-	/*CString byteToHexStr(byte byte_arr[], int arr_len);*/
+	CString byteToHexStr(byte byte_arr[], int arr_len);
 	static DWORD WINAPI RecvProc(LPVOID lpParameter);//抓包子线程函数
 	static DWORD WINAPI SpeedProc(LPVOID lpParameter);//存储子线程程序
 	static DWORD WINAPI Stopbysize(LPVOID lpParameter);//収包计数子线程函数
