@@ -110,7 +110,7 @@ BOOL CraycanDlg::OnInitDialog()
 	CRect rs;
 	m_tabctrl.GetClientRect(&rs);
 	//调整子对话框在父窗口中的位置
-	rs.top += 36;
+	rs.top += 35;
 	//rs.bottom -= 0;
 	rs.left -=20;
 	//rs.right -= 0;
