@@ -110,13 +110,6 @@ BOOL Cserialport::OnInitDialog()
 	this->m_threshold3 = Cini::ReadInt(_T("Threshold"), _T("Threshold3"), _T("raycan.ini"));
 	this->m_threshold4 = Cini::ReadInt(_T("Threshold"), _T("Threshold4"), _T("raycan.ini"));
 	UpdateData(FALSE);
-	for (int i = 0; i < 72;i++)
-	{
-		data[i][0] = m_threshold1;
-		data[i][1] = m_threshold2;
-		data[i][2] = m_threshold3;
-		data[i][3] = m_threshold4;	
-	}
 	//获取可用串口
 	CString  strCom, strComOpen;
 	int  nCom = 0;
