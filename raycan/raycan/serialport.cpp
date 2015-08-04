@@ -15,9 +15,14 @@ Cserialport::Cserialport(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Cserialport::IDD, pParent)
 	, m_value(0)
 	, m_boardnum(_T(""))
-	, m_filepath(_T(""))
 	, m_percent(_T(""))
 	, m_recvcount(_T(""))
+	, m_typeofdata(0)
+	,filepathstr(_T(""))
+	, m_maxbin1(_T(""))
+	, m_maxbin2(_T(""))
+	, m_maxbin3(_T(""))
+	, m_version(_T(""))
 {
 	flag_Initialization = false;
 	m_threshold1 = 0;
@@ -26,17 +31,30 @@ Cserialport::Cserialport(CWnd* pParent /*=NULL*/)
 	m_threshold4 = 0;
 	Recv_ZL = "0100000000fe";
 	ZL_RT = "0000000000";
+	ZL_PE = "0500000000";
+	ZL_SHUTPE = "0500000008";
+	ZL_VERSION = "0200000000";
+	
 	R_ZL_boardnumber ="2600000000";
 	R_ZL_IP1 = "2100040000";
 	R_ZL_IP2 = "2100030000";
 	R_ZL_IP3 = "2100020000";
 	R_ZL_IP4 = "2100010000";
 
+	R_ZL_maxbin1 = "2700010000";
+	R_ZL_maxbin2 = "2700020000";
+	R_ZL_maxbin3 = "2700030000";
+
 	W_ZL_boardnumber = "160000";
 	W_ZL_IP1 = "110004";
 	W_ZL_IP2 = "110003";
 	W_ZL_IP3 = "110002";
 	W_ZL_IP4 = "110001";
+
+	W_ZL_maxbin1 = "170001";
+	W_ZL_maxbin2 = "170002";
+	W_ZL_maxbin3 = "170003";
+
 }
 
 Cserialport::~Cserialport()
@@ -61,12 +79,16 @@ void Cserialport::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_THRESHOLD2, m_threshold2);
 	DDX_Text(pDX, IDC_THRESHOLD3, m_threshold3);
 	DDX_Text(pDX, IDC_THRESHOLD4, m_threshold4);
-	DDX_Control(pDX, IDC_NUM, m_numnote);
-	DDX_Control(pDX, IDC_IP, m_ipnote);
+	DDX_Control(pDX, IDC_TEXT, m_note);
 	DDX_Control(pDX, IDC_RECVIEW, m_recview);
 	DDX_Control(pDX, IDC_PROGRESS, m_progressctrl);
 	DDX_Text(pDX, IDC_PERCENT, m_percent);
 	DDX_Text(pDX, IDC_RECVCOUNT, m_recvcount);
+	DDX_Radio(pDX, IDC_RADIO1, m_typeofdata);
+	DDX_Text(pDX, IDC_MAXBIN1, m_maxbin1);
+	DDX_Text(pDX, IDC_MAXBIN2, m_maxbin2);
+	DDX_Text(pDX, IDC_MAXBIN3, m_maxbin3);
+	DDX_Text(pDX, IDC_VERSION, m_version);
 }
 
 
@@ -85,6 +107,11 @@ BEGIN_MESSAGE_MAP(Cserialport, CDialogEx)
 	ON_BN_CLICKED(IDC_WRITE, &Cserialport::OnClickedWrite)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_STOP, &Cserialport::OnBnClickedStopsenddata)
+	ON_BN_CLICKED(IDC_PERMIT, &Cserialport::OnBnClickedPermit)
+	ON_BN_CLICKED(IDC_CHOSEFILE, &Cserialport::OnBnClickedChosefile)
+	ON_BN_CLICKED(IDC_WRITEMAXBIN, &Cserialport::OnBnClickedWritemaxbin)
+	ON_BN_CLICKED(IDC_READMAXBIN, &Cserialport::OnBnClickedReadmaxbin)
+	ON_BN_CLICKED(IDC_R_VERSION, &Cserialport::OnBnClickedRVersion)
 END_MESSAGE_MAP()
 
 
@@ -235,7 +262,6 @@ void Cserialport::OnIpnFieldchangedIpaddress(NMHDR *pNMHDR, LRESULT *pResult)
 void Cserialport::OnClickedOpencomm()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	//Get_paritybit(R_ZL_boardnumber);
 	CButton *CloseComm = (CButton *)GetDlgItem(IDC_CLOSECOMM);
 	CloseComm->EnableWindow(TRUE);
 	CButton *OpenComm = (CButton *)GetDlgItem(IDC_OPENCOMM);
@@ -329,7 +355,7 @@ DWORD Cserialport::COM_write(DWORD dwBytesWritten,CString&Buffer)
 	if (!bWriteStat){
 		int error = GetLastError();
 		if (GetLastError() == ERROR_IO_PENDING){
-			WaitForSingleObject(m_osWrite.hEvent,1000);
+			WaitForSingleObject(m_osWrite.hEvent,500);
 			PurgeComm(hCom, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
 			return dwBytesWritten;
 		}
@@ -525,16 +551,16 @@ void Cserialport::OnClickedReadboardnum()
 			return;
 		}
 		else{
-			m_numnote.SetWindowText(_T(""));
+			m_note.SetWindowText(_T(""));
 			CString ZL;
 			ZL = R_ZL_boardnumber + Get_paritybit(R_ZL_boardnumber);
 			COM_write(ZL.GetLength(), ZL);
 			OVERLAPPED de_lay;
 			memset(&de_lay, 0, sizeof(OVERLAPPED));
 			de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-			WaitForSingleObject(de_lay.hEvent, 100);
+			WaitForSingleObject(de_lay.hEvent, 20);
 			CString Recv;
-			COM_read(100, Recv);
+			COM_read(20, Recv);
 			m_recview.SetWindowText(_T(""));
 			m_recview.SetSel(-1, -1); //自动滚屏 
 			m_recview.ReplaceSel(Recv + "\r\n"); //自动换行 
@@ -552,7 +578,7 @@ void Cserialport::OnClickedReadboardnum()
 					//板子编号
 					m_boardnum.Format(_T("%d"), HexToDem(Recv.Mid(6, 4)));
 					UpdateData(FALSE);
-					m_numnote.SetWindowText(_T("成功(Successfully read)"));
+					m_note.SetWindowText(_T("成功(Successfully read)"));
 				}
 				else
 				{
@@ -591,6 +617,11 @@ void Cserialport::OnBnClickedWriteboardnum()
 		}
 		else{
 			UpdateData(TRUE);
+			if (switchflag == false)
+			{
+				MessageBox(_T("没有权限!\nNo permission!"));
+				return;
+			}
 			if (m_boardnum.IsEmpty())
 			{
 				MessageBox(_T("请输入板号!\nPlease input the NUM!"));
@@ -621,9 +652,9 @@ void Cserialport::OnBnClickedWriteboardnum()
 						OVERLAPPED de_lay;
 						memset(&de_lay, 0, sizeof(OVERLAPPED));
 						de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-						WaitForSingleObject(de_lay.hEvent, 100);
+						WaitForSingleObject(de_lay.hEvent, 20);
 						CString Recv;
-						COM_read(100, Recv);
+						COM_read(20, Recv);
 						m_recview.SetWindowText(_T(""));
 						m_recview.SetSel(-1, -1); //自动滚屏 
 						m_recview.ReplaceSel(Recv + "\r\n"); //自动换行 
@@ -636,10 +667,10 @@ void Cserialport::OnBnClickedWriteboardnum()
 						{
 							//m_boardnum = _T("已写入");
 							//UpdateData(FALSE);
-							m_numnote.SetWindowText(_T("成功(Successfully write)"));
+							m_note.SetWindowText(_T("成功(Successfully write)"));
 						}
 						else{
-							m_numnote.SetWindowText(_T("失败，请重试!(Failed,please retry!)"));
+							m_note.SetWindowText(_T("失败，请重试!(Failed,please retry!)"));
 							return;
 						}
 					}
@@ -689,23 +720,23 @@ void Cserialport::OnBnClickedWriteboardnum()
 					IP1 = IP_Str.Mid(0, 2);
 					ZL = W_ZL_IP1 + "00" + IP1 + Get_paritybit(W_ZL_IP1 + IP1 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 100);
-					COM_read(100, Recv1);
+					WaitForSingleObject(de_lay.hEvent, 20);
+					COM_read(20, Recv1);
 					IP2 = IP_Str.Mid(2, 2);
 					ZL = W_ZL_IP2 + "00" + IP2 + Get_paritybit(W_ZL_IP2 + IP2 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 100);
-					COM_read(100, Recv2);
+					WaitForSingleObject(de_lay.hEvent, 20);
+					COM_read(20, Recv2);
 					IP3 = IP_Str.Mid(4, 2);
 					ZL = W_ZL_IP3 + "00" + IP3 + Get_paritybit(W_ZL_IP3 + IP3 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 100);
-					COM_read(100, Recv3);
+					WaitForSingleObject(de_lay.hEvent, 20);
+					COM_read(20, Recv3);
 					IP4 = IP_Str.Mid(6, 8);
 					ZL = W_ZL_IP4 + "00" + IP4 + Get_paritybit(W_ZL_IP4 + IP4 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 100);
-					COM_read(100, Recv4);
+					WaitForSingleObject(de_lay.hEvent, 20);
+					COM_read(20, Recv4);
 					CString Recv;
 					Recv = Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ") + Recv4 + _T("       ");
 					m_recview.SetWindowText(_T(""));
@@ -718,11 +749,11 @@ void Cserialport::OnBnClickedWriteboardnum()
 					UpdateData(FALSE);
 					if (Recv1 == Recv_ZL&&Recv2 == Recv_ZL&&Recv3 == Recv_ZL&&Recv4 == Recv_ZL)
 					{
-						m_ipnote.SetWindowText(_T("成功(Successfully write)"));
+						m_note.SetWindowText(_T("成功(Successfully write)"));
 						//m_ipaddress.SetAddress(0, 0, 0, 0);
 					}
 					else{
-						m_ipnote.SetWindowText(_T("失败，请重试!(Failed,please retry!)"));
+						m_note.SetWindowText(_T("失败，请重试!(Failed,please retry!)"));
 						return;
 					}
 				}
@@ -754,16 +785,8 @@ void Cserialport::OnBnClickedWriteboardnum()
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 				ZL = R_ZL_IP1 + Get_paritybit(R_ZL_IP1);
 				COM_write(ZL.GetLength(), ZL);
-				WaitForSingleObject(de_lay.hEvent, 100);
-				COM_read(100, Recv1);
-				m_recview.SetWindowText(_T(""));
-				m_recview.SetSel(-1, -1); //自动滚屏 
-				m_recview.ReplaceSel(Recv1 + _T("       ") + "\r\n"); //自动换行 
-				UpdateData(true);
-				m_recvcount = "";
-				m_recvcount.Format(_T("%d"), Recv1.GetLength() / 12);
-				m_recvcount += "/1";
-				UpdateData(FALSE);
+				WaitForSingleObject(de_lay.hEvent, 20);
+				COM_read(20, Recv1);
 				if (Recv1.GetLength() == 12 && Recv1.Left(2) == "01" && Recv1.Mid(2, 4) == "0000")
 				{
 					CString Recv_ZL_CZ = Recv1.Left(6);
@@ -774,15 +797,8 @@ void Cserialport::OnBnClickedWriteboardnum()
 						IP1.Format(_T("%d"), HexToDem(Recv1.Mid(8, 2)));
 						ZL = R_ZL_IP2 + Get_paritybit(R_ZL_IP2);
 						COM_write(ZL.GetLength(), ZL);
-						WaitForSingleObject(de_lay.hEvent, 100);
-						COM_read(100, Recv2);
-						m_recview.SetWindowText(_T(""));
-						m_recview.ReplaceSel(Recv1 + _T("       ") + Recv2 + _T("       ") + "\r\n"); //自动换行 
-						UpdateData(true);
-						m_recvcount = "";
-						m_recvcount.Format(_T("%d"), (Recv1+Recv2).GetLength() / 12);
-						m_recvcount += "/2";
-						UpdateData(FALSE);
+						WaitForSingleObject(de_lay.hEvent, 20);
+						COM_read(20, Recv2);
 						if (Recv2.GetLength() == 12 && Recv2.Left(2) == "01" && Recv2.Mid(2, 4) == "0000")
 						{
 							Recv_ZL_CZ = Recv2.Left(6);
@@ -793,15 +809,8 @@ void Cserialport::OnBnClickedWriteboardnum()
 								IP2.Format(_T("%d"), HexToDem(Recv2.Mid(8, 2)));
 								ZL = R_ZL_IP3 + Get_paritybit(R_ZL_IP3);
 								COM_write(ZL.GetLength(), ZL);
-								WaitForSingleObject(de_lay.hEvent, 100);
-								COM_read(100, Recv3);
-								m_recview.SetWindowText(_T(""));
-								m_recview.ReplaceSel(Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ") + "\r\n"); //自动换行 
-								UpdateData(true);
-								m_recvcount = "";
-								m_recvcount.Format(_T("%d"), (Recv1 + Recv2+Recv3).GetLength() / 12);
-								m_recvcount += "/3";
-								UpdateData(FALSE);
+								WaitForSingleObject(de_lay.hEvent, 20);
+								COM_read(20, Recv3);				
 								if (Recv3.GetLength() == 12 && Recv3.Left(2) == "01" && Recv3.Mid(2, 4) == "0000")
 								{
 									Recv_ZL_CZ = Recv3.Left(6);
@@ -812,8 +821,8 @@ void Cserialport::OnBnClickedWriteboardnum()
 										IP3.Format(_T("%d"), HexToDem(Recv3.Mid(8, 2)));
 										ZL = R_ZL_IP4 + Get_paritybit(R_ZL_IP4);
 										COM_write(ZL.GetLength(), ZL);
-										WaitForSingleObject(de_lay.hEvent, 100);
-										COM_read(100, Recv4);
+										WaitForSingleObject(de_lay.hEvent, 20);
+										COM_read(20, Recv4);
 										m_recview.SetWindowText(_T(""));
 										m_recview.ReplaceSel(Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ") + Recv4 + _T("       ") + "\r\n"); //自动换行 
 										UpdateData(true);
@@ -830,7 +839,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 												//IP4
 												IP4.Format(_T("%d"), HexToDem(Recv4.Mid(8, 2)));
 												m_ipaddress.SetAddress(_ttoi(IP1), _ttoi(IP2), _ttoi(IP3), _ttoi(IP4));
-												m_ipnote.SetWindowText(_T("成功(Successfully read)"));
+												m_note.SetWindowText(_T("成功(Successfully read)"));
 											}
 											else
 											{
@@ -949,9 +958,9 @@ void Cserialport::OnBnClickedWriteboardnum()
 				OVERLAPPED de_lay;
 				memset(&de_lay, 0, sizeof(OVERLAPPED));
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 100);
+				WaitForSingleObject(de_lay.hEvent, 30);
 				CString Recv;
-				COM_read(100, Recv);
+				COM_read(20, Recv);
 				m_recview.SetWindowText(_T(""));
 				m_recview.SetSel(-1, -1); //自动滚屏 
 				m_recview.ReplaceSel(Recv + "\r\n"); //自动换行 
@@ -1000,9 +1009,9 @@ void Cserialport::OnBnClickedWriteboardnum()
 				OVERLAPPED de_lay;
 				memset(&de_lay, 0, sizeof(OVERLAPPED));
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 100);
+				WaitForSingleObject(de_lay.hEvent, 20);
 				CString Recv;
-				COM_read(100, Recv);
+				COM_read(20, Recv);
 				m_recview.SetWindowText(_T(""));
 				m_recview.SetSel(-1, -1); //自动滚屏 
 				m_recview.ReplaceSel(Recv +  "\r\n"); //自动换行 
@@ -1065,9 +1074,9 @@ void Cserialport::OnBnClickedWriteboardnum()
 				OVERLAPPED de_lay;
 				memset(&de_lay, 0, sizeof(OVERLAPPED));
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 100);
+				WaitForSingleObject(de_lay.hEvent, 20);
 				CString Recv;
-				COM_read(100, Recv);
+				COM_read(20, Recv);
 				m_recview.SetWindowText(_T(""));
 				m_recview.SetSel(-1, -1); //自动滚屏 
 				m_recview.ReplaceSel(Recv +"\r\n"); //自动换行 
@@ -1097,27 +1106,36 @@ void Cserialport::OnBnClickedWriteboardnum()
 		{
 			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
 			return;
-		}
+		}	
 		else{	
-			CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
-			SendData->EnableWindow(FALSE);
 			UpdateData(TRUE);
-			for (int i = 0; i < 72; i++)
+			if (switchflag == false && (m_typeofdata == 1 || m_typeofdata == 2))
 			{
-				data[i][0] = m_threshold1;
-				data[i][1] = m_threshold2;
-				data[i][2] = m_threshold3;
-				data[i][3] = m_threshold4;
+				MessageBox(_T("没有权限!\nNo permission!"));
+				return;
 			}
-			CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
-			Stopsenddata->EnableWindow(TRUE);
-			CRITICAL_SECTION g_cs;
-			InitializeCriticalSection(&g_cs);
-			HANDLE hThread = CreateThread(NULL,0,MyThread,this,0,NULL);
-			CloseHandle(hThread);
-			Sleep(1000);
-			DeleteCriticalSection(&g_cs);
-			SetTimer(1, 1000, NULL);//设置进度条更新时钟			
+			if (filepathstr=="" && (m_typeofdata == 1 || m_typeofdata == 2))
+			{
+				MessageBox(_T("请选取文件!\nTXT file needed!"));
+				return;
+			}
+			if ((m_typeofdata == 1 && filetype == 2) || (m_typeofdata == 2 && filetype == 1))
+			{
+				MessageBox(_T("请选择正确的文件!\nPlease choose correct file!"));
+				CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
+				Stopsenddata->EnableWindow(FALSE);
+				KillTimer(1);
+				return;
+			}
+				CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
+				SendData->EnableWindow(FALSE);
+				UpdateData(TRUE);
+				CRITICAL_SECTION g_cs;
+				InitializeCriticalSection(&g_cs);
+				HANDLE hThread = CreateThread(NULL, 0, MyThread, this, 0, NULL);
+				CloseHandle(hThread);
+				Sleep(1000);
+				DeleteCriticalSection(&g_cs);
 		}
 	}
 
@@ -1131,12 +1149,22 @@ void Cserialport::OnBnClickedWriteboardnum()
 	void Cserialport::OnTimer(UINT_PTR nIDEvent)
 	{
 		// TODO:  在此添加消息处理程序代码和/或调用默认值
-		int m_nPos = (int)((processcount * 100) / 288 + 0.5);
+		UpdateData(TRUE);
+		int factor;
+		if (m_typeofdata==0||m_typeofdata==1)
+		{
+			factor = 1;
+		}
+		else {
+			factor = 2;
+		}
+		int m_nPos = (int)((processcount * 100) / (288*factor) + 0.5);
 		m_progressctrl.SetPos(m_nPos);
 		m_percent.Format(_T("%d"), m_nPos);
 		m_percent += '%';
 		this->SetDlgItemText(IDC_PERCENT, m_percent);
-		if (processcount == 288)
+		
+		if (processcount == 288|| processcount == 576)
 		{
 			m_recview.SetWindowText(_T(""));
 			m_recview.SetSel(-1, -1); //自动滚屏 
@@ -1146,9 +1174,14 @@ void Cserialport::OnBnClickedWriteboardnum()
 			m_recvcount = "";
 			m_recvcount.Format(_T("%d"),viewcount.GetLength()/12);
 			viewcount = "";
-			m_recvcount += "/288";
-			UpdateData(FALSE);
-			
+			if (processcount == 288)
+			{
+				m_recvcount += "/288";
+			}
+			else {
+				m_recvcount += "/576";
+			}			
+			UpdateData(FALSE);			
 			processcount = 0;
 			m_percent = _T("完成\nDone");
 			this->SetDlgItemText(IDC_PERCENT, m_percent);
@@ -1157,8 +1190,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 			SendData->EnableWindow(TRUE);
 			CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
 			Stopsenddata->EnableWindow(FALSE);
-		}
-		
+		}	
 		CDialogEx::OnTimer(nIDEvent);
 	}
 
@@ -1168,43 +1200,134 @@ void Cserialport::OnBnClickedWriteboardnum()
 	{
 		CString ZL, channel, thresholdnum;
 		CString m_thresholdvalue;
-		for (int i = 0; i < 72; i++)
-		{
-			if (sendflag == true)
+		SetTimer(1, 1000, NULL);//设置进度条更新时钟
+		CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
+		Stopsenddata->EnableWindow(TRUE);		
+		if (m_typeofdata == 0)
 			{
-				sendflag = false;
-				processcount = 0;
-				m_percent = _T("已中止(Aborted)");
-				this->SetDlgItemText(IDC_PERCENT, m_percent);
-				m_progressctrl.SetPos(0);
-				KillTimer(1);
-				viewStr = "";
-				m_recvcount = "";
-				viewcount = "";
-				CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
-				SendData->EnableWindow(TRUE);
-				break;
+				for (int i = 0; i < 72; i++)
+				{
+					data[i][0] = m_threshold1;
+					data[i][1] = m_threshold2;
+					data[i][2] = m_threshold3;
+					data[i][3] = m_threshold4;
+				}
+				for (int i = 0; i < 72; i++)
+				{
+					if (sendflag == true)
+					{
+						sendflag = false;
+						processcount = 0;
+						m_percent = _T("已中止(Aborted)");
+						this->SetDlgItemText(IDC_PERCENT, m_percent);
+						m_progressctrl.SetPos(0);
+						KillTimer(1);
+						viewStr = "";
+						m_recvcount = "";
+						viewcount = "";
+						CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
+						SendData->EnableWindow(TRUE);
+						break;
+					}
+					for (int j = 0; j < 4; j++)
+					{
+						int A = (int)((4096.0 *(double)(data[i][j]) / 1250.0) + 0.5);
+						m_thresholdvalue.Format(_T("%d"), A);
+						channel.Format(_T("%d"), i + 1);
+						thresholdnum.Format(_T("%d"), j + 1);
+						ZL = _T("10") + DemToHex(channel).Right(2) + DemToHex(thresholdnum).Right(2) + DemToHex(m_thresholdvalue);
+						ZL += Get_paritybit(ZL);
+						COM_write(ZL.GetLength(), ZL);
+						OVERLAPPED de_lay;
+						memset(&de_lay, 0, sizeof(OVERLAPPED));
+						de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+						WaitForSingleObject(de_lay.hEvent, 25);
+						CString Recv;
+						COM_read(20, Recv);
+						viewStr += Recv + _T("	  ");
+						viewcount += Recv;
+						processcount++;
+					}
+				}
 			}
-			for (int j = 0; j < 4; j++)
+			if (m_typeofdata == 1)
 			{
-				int A = (int)((4096.0 *(double)(data[i][j]) / 1250.0) + 0.5);
-				m_thresholdvalue.Format(_T("%d"), A);
-				channel.Format(_T("%d"), i + 1);
-				thresholdnum.Format(_T("%d"), j + 1);
-				ZL = _T("10") + DemToHex(channel).Right(2) + DemToHex(thresholdnum).Right(2) + DemToHex(m_thresholdvalue);
-				ZL += Get_paritybit(ZL);
-				COM_write(ZL.GetLength(), ZL);
-				OVERLAPPED de_lay;
-				memset(&de_lay, 0, sizeof(OVERLAPPED));
-				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 50);
-				CString Recv;
-				COM_read(100, Recv);
-				viewStr += Recv + _T("	  ");
-				viewcount += Recv;
-				processcount++;
+				for (int i = 0; i < 72; i++)
+				{
+					if (sendflag == true)
+					{
+						sendflag = false;
+						processcount = 0;
+						m_percent = _T("已中止(Aborted)");
+						this->SetDlgItemText(IDC_PERCENT, m_percent);
+						m_progressctrl.SetPos(0);
+						KillTimer(1);
+						viewStr = "";
+						m_recvcount = "";
+						viewcount = "";
+						CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
+						SendData->EnableWindow(TRUE);
+						break;
+					}
+					for (int j = 0; j < 4; j++)
+					{
+						m_thresholdvalue.Format(_T("%d"), biaseddata[i][j]);
+						channel.Format(_T("%d"), i + 1);
+						thresholdnum.Format(_T("%d"), j + 1);
+						ZL = _T("14") + DemToHex(channel).Right(2) + DemToHex(thresholdnum).Right(2) + DemToHex(m_thresholdvalue);
+						ZL += Get_paritybit(ZL);
+						COM_write(ZL.GetLength(), ZL);
+						OVERLAPPED de_lay;
+						memset(&de_lay, 0, sizeof(OVERLAPPED));
+						de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+						WaitForSingleObject(de_lay.hEvent, 25);
+						CString Recv;
+						COM_read(20, Recv);
+						viewStr += Recv + _T("	  ");
+						viewcount += Recv;
+						processcount++;
+					}
+				}
 			}
-		}
+			if (m_typeofdata == 2)
+			{
+				for (int i = 0; i < 72; i++)
+				{
+					if (sendflag == true)
+					{
+						sendflag = false;
+						processcount = 0;
+						m_percent = _T("已中止(Aborted)");
+						this->SetDlgItemText(IDC_PERCENT, m_percent);
+						m_progressctrl.SetPos(0);
+						KillTimer(1);
+						viewStr = "";
+						m_recvcount = "";
+						viewcount = "";
+						CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
+						SendData->EnableWindow(TRUE);
+						break;
+					}
+					for (int j = 0; j < 8; j++)
+					{
+						m_thresholdvalue.Format(_T("%d"), delayeddata[i][j]);
+						channel.Format(_T("%d"), i + 1);
+						thresholdnum.Format(_T("%d"), j + 1);
+						ZL = _T("15") + DemToHex(channel).Right(2) + DemToHex(thresholdnum).Right(2) + DemToHex(m_thresholdvalue);
+						ZL += Get_paritybit(ZL);
+						COM_write(ZL.GetLength(), ZL);
+						OVERLAPPED de_lay;
+						memset(&de_lay, 0, sizeof(OVERLAPPED));
+						de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+						WaitForSingleObject(de_lay.hEvent, 25);
+						CString Recv;
+						COM_read(20, Recv);
+						viewStr += Recv + _T("	  ");
+						viewcount += Recv;
+						processcount++;
+					}
+				}
+			}
 	}
 
 
@@ -1214,4 +1337,423 @@ void Cserialport::OnBnClickedWriteboardnum()
 		sendflag = true;
 		CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
 		Stopsenddata->EnableWindow(FALSE);
+	}
+
+
+	void Cserialport::OnBnClickedPermit()
+	{
+		// TODO: 在此添加控件通知处理程序代码
+		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
+		{
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			return;
+		}
+		else {
+			if (processcount != 0 && processcount != 288)
+			{
+				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				return;
+			}
+			else {
+				CString ZL;
+				if (switchflag==true)
+				{
+					ZL = ZL_SHUTPE + Get_paritybit(ZL_SHUTPE);
+				}
+				else{
+				ZL = ZL_PE + Get_paritybit(ZL_PE);
+				}
+				COM_write(ZL.GetLength(), ZL);
+				OVERLAPPED de_lay;
+				memset(&de_lay, 0, sizeof(OVERLAPPED));
+				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+				WaitForSingleObject(de_lay.hEvent, 20);
+				CString Recv;
+				COM_read(20, Recv);
+				m_recview.SetWindowText(_T(""));
+				m_recview.SetSel(-1, -1); //自动滚屏 
+				m_recview.ReplaceSel(Recv + "\r\n"); //自动换行 
+				UpdateData(true);
+				m_recvcount = "";
+				m_recvcount.Format(_T("%d"), Recv.GetLength() / 12);
+				m_recvcount += "/1";
+				UpdateData(FALSE);
+				if (Recv == Recv_ZL&&switchflag==false)
+				{
+					switchflag = true;
+					CButton *permit = (CButton *)GetDlgItem(IDC_PERMIT);
+					permit->SetWindowText(_T("关闭权限(unpermit)"));
+					MessageBox(_T("获取权限成功!\nGet permission successfully!"));
+				}
+				else if (Recv == Recv_ZL&&switchflag == true)
+				{
+					switchflag = false;
+					CButton *permit = (CButton *)GetDlgItem(IDC_PERMIT);
+					permit->SetWindowText(_T("开放权限(permit)"));
+					MessageBox(_T("关闭权限成功!\nGet permission successfully!"));
+				}
+				else
+				{
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					return;
+				}
+			}
+		}
+
+	}
+	void Cserialport::OnBnClickedChosefile()
+	{
+		// TODO: 在此添加控件通知处理程序代码
+		UpdateData(TRUE);
+		if (m_typeofdata == 0)
+		{
+			MessageBox(_T("不需要读取文件!\nThere is no need to open a file!"));
+			return;
+		}
+		TCHAR szFilter[] = _T("TXT(*.txt)|*.txt||");
+		// 构造打开文件对话框   
+		CFileDialog fileDlg(TRUE, _T("txt"), NULL, 0, szFilter, this);
+
+		// 显示打开文件对话框   
+		if (IDOK == fileDlg.DoModal())
+		{
+			// 如果点击了文件对话框上的“打开”按钮，则将选择的文件路径显示到编辑框里   
+			filepathstr = fileDlg.GetPathName();//文件名保存在了FilePathName里
+			SetDlgItemText(IDC_FILEPATH, filepathstr);
+			try
+			{
+				CStdioFile file;
+				CString m_sample_data, m_strline;
+				if (m_typeofdata == 1)
+				{
+					int temp[72 * 4];
+					file.Open(filepathstr, CFile::modeRead | CFile::typeText);
+					while (file.ReadString(m_strline))
+					{
+						m_sample_data += m_strline;
+					}
+					//int n = m_sample_data.Replace('\t', '|');
+					if (m_sample_data.Replace('\t', '|') == 576)
+					{
+						filetype = 2;
+						return;
+					}
+					else {
+						filetype = 1;
+					}
+					for (int i = 0;i < 72 * 4;i++)
+					{
+						m_sample_data.Left(m_sample_data.Find('|'));
+						temp[i] = _ttoi(m_sample_data.Left(m_sample_data.Find('|')));
+						m_sample_data = m_sample_data.Right(m_sample_data.GetLength() - m_sample_data.Find('|') - 1);
+					}
+					for (int i = 0; i < 72; i++)
+					{
+						biaseddata[i][0] = temp[i * 4];
+						biaseddata[i][1] = temp[i * 4 + 1];
+						biaseddata[i][2] = temp[i * 4 + 2];
+						biaseddata[i][3] = temp[i * 4 + 3];
+					}
+					file.Close();
+					
+				}
+				if (m_typeofdata == 2)
+				{
+					int temp[72 * 8];
+					file.Open(filepathstr, CFile::modeRead | CFile::typeText);
+					while (file.ReadString(m_strline))
+					{
+						m_sample_data += m_strline;
+					}
+					if (m_sample_data.Replace('\t', '|') == 288)
+					{
+						filetype = 1;
+						return;
+					}
+					else {
+						filetype = 2;
+					}
+					for (int i = 0;i < 72 * 8;i++)
+					{
+						m_sample_data.Left(m_sample_data.Find('\t'));
+						temp[i] = _ttoi(m_sample_data.Left(m_sample_data.Find('\t')));
+						m_sample_data = m_sample_data.Right(m_sample_data.GetLength() - m_sample_data.Find('\t') - 1);
+					}
+					for (int i = 0; i < 72; i++)
+					{
+						for (int j = 0;j < 8;j++)
+						{
+							delayeddata[i][j] = temp[i * 8+j];
+						}					
+					}
+					file.Close();
+				}
+			}
+			catch (CFileException* e)
+			{
+				e->ReportError();
+				e->Delete();
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+
+
+	void Cserialport::OnBnClickedWritemaxbin()
+	{
+		// TODO: 在此添加控件通知处理程序代码
+		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
+		{
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			return;
+		}
+		else {
+			if (processcount != 0 && processcount != 288)
+			{
+				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				return;
+			}
+			else {
+				UpdateData(TRUE);
+				if (switchflag == false)
+				{
+					MessageBox(_T("没有权限!\nNo permission!"));
+					return;
+				}
+				if (m_maxbin1.IsEmpty()&& m_maxbin2.IsEmpty()&& m_maxbin3.IsEmpty())
+				{
+					MessageBox(_T("请输入MAXBIN!\nPlease input MAXBIN!"));
+					return;
+				}
+				else {
+					if (_ttoi(m_maxbin1) < 256 && _ttoi(m_maxbin2) < 256 && _ttoi(m_maxbin3) < 256)
+					{
+						CString ZL;
+						CString Recv1, Recv2, Recv3;
+						UpdateData(TRUE);
+						OVERLAPPED de_lay;
+						memset(&de_lay, 0, sizeof(OVERLAPPED));
+						de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+						ZL = W_ZL_maxbin1 + DemToHex(m_maxbin1) + Get_paritybit(W_ZL_maxbin1 + DemToHex(m_maxbin1));
+						COM_write(ZL.GetLength(), ZL);
+						WaitForSingleObject(de_lay.hEvent, 20);
+						COM_read(20, Recv1);
+						ZL = W_ZL_maxbin2 + DemToHex(m_maxbin2) + Get_paritybit(W_ZL_maxbin2 + DemToHex(m_maxbin2));
+						COM_write(ZL.GetLength(), ZL);
+						WaitForSingleObject(de_lay.hEvent, 20);
+						COM_read(20, Recv2);
+						ZL = W_ZL_maxbin3 + DemToHex(m_maxbin3) + Get_paritybit(W_ZL_maxbin3 + DemToHex(m_maxbin3));
+						COM_write(ZL.GetLength(), ZL);
+						WaitForSingleObject(de_lay.hEvent, 20);
+						COM_read(20, Recv3);
+						CString Recv;
+						Recv = Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ");
+						m_recview.SetWindowText(_T(""));
+						m_recview.SetSel(-1, -1); //自动滚屏 
+						m_recview.ReplaceSel(Recv + "\r\n"); //自动换行 
+						UpdateData(true);
+						m_recvcount = "";
+						m_recvcount.Format(_T("%d"), (Recv1 + Recv2 + Recv3).GetLength() / 12);
+						m_recvcount += "/3";
+						UpdateData(FALSE);
+						if (Recv1 == Recv_ZL&&Recv2 == Recv_ZL&&Recv3 == Recv_ZL)
+						{
+							m_note.SetWindowText(_T("成功(Successfully write)"));
+						}
+						else {
+							m_note.SetWindowText(_T("失败，请重试!(Failed,please retry!)"));
+							return;
+						}
+					}
+					else {
+						MessageBox(_T("超出范围!\nout of range!"));
+					}
+				}
+			}
+		}
+	}
+
+
+	void Cserialport::OnBnClickedReadmaxbin()
+	{
+		// TODO: 在此添加控件通知处理程序代码
+		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
+		{
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			return;
+		}
+		else {
+			if (processcount != 0 && processcount != 288)
+			{
+				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				return;
+			}
+			else {
+				CString ZL;
+				CString Recv1, Recv2, Recv3;
+
+				OVERLAPPED de_lay;
+				memset(&de_lay, 0, sizeof(OVERLAPPED));
+				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+				ZL = R_ZL_maxbin1 + Get_paritybit(R_ZL_maxbin1);
+				COM_write(ZL.GetLength(), ZL);
+				WaitForSingleObject(de_lay.hEvent, 20);
+				COM_read(20, Recv1);
+				if (Recv1.GetLength() == 12 && Recv1.Left(2) == "01" && Recv1.Mid(2, 4) == "0000")
+				{
+					CString Recv_ZL_CZ = Recv1.Left(6);
+					CString Recv_ZL_JY = Get_paritybit(Recv1.Left(10));
+					if (Recv_ZL_CZ == "010000" && Recv_ZL_JY == Recv1.Mid(10, 2))
+					{
+						//maxbin1
+						m_maxbin1.Format(_T("%d"), HexToDem(Recv1.Mid(8, 2)));
+						UpdateData(FALSE);
+						ZL = R_ZL_maxbin2 + Get_paritybit(R_ZL_maxbin2);
+						COM_write(ZL.GetLength(), ZL);
+						WaitForSingleObject(de_lay.hEvent, 20);
+						COM_read(20, Recv2);
+						if (Recv2.GetLength() == 12 && Recv2.Left(2) == "01" && Recv2.Mid(2, 4) == "0000")
+						{
+							Recv_ZL_CZ = Recv2.Left(6);
+							Recv_ZL_JY = Get_paritybit(Recv2.Left(10));
+							if (Recv_ZL_CZ == "010000" && Recv_ZL_JY == Recv2.Mid(10, 2))
+							{
+								//maxbin2
+								m_maxbin2.Format(_T("%d"), HexToDem(Recv2.Mid(8, 2)));
+								UpdateData(FALSE);
+								ZL = R_ZL_maxbin3 + Get_paritybit(R_ZL_maxbin3);
+								COM_write(ZL.GetLength(), ZL);
+								WaitForSingleObject(de_lay.hEvent, 20);
+								COM_read(20, Recv3);
+								m_recview.SetWindowText(_T(""));
+								m_recview.ReplaceSel(Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ") + "\r\n"); //自动换行 
+								UpdateData(true);
+								m_recvcount = "";
+								m_recvcount.Format(_T("%d"), (Recv1 + Recv2 + Recv3).GetLength() / 12);
+								m_recvcount += "/3";
+								UpdateData(FALSE);
+								if (Recv3.GetLength() == 12 && Recv3.Left(2) == "01" && Recv3.Mid(2, 4) == "0000")
+								{
+									Recv_ZL_CZ = Recv3.Left(6);
+									Recv_ZL_JY = Get_paritybit(Recv3.Left(10));
+									if (Recv_ZL_CZ == "010000" && Recv_ZL_JY == Recv3.Mid(10, 2))
+									{
+										//maxbin3
+										m_maxbin3.Format(_T("%d"), HexToDem(Recv3.Mid(8, 2)));
+										UpdateData(FALSE);
+										m_note.SetWindowText(_T("成功(Successfully read)"));
+									}
+									else
+									{
+										MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+										return;
+									}
+								}
+								else
+								{
+									MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+									return;
+								}
+							}
+							else
+							{
+								MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+								return;
+							}
+						}
+						else
+						{
+							MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+							return;
+						}
+					}
+					else
+					{
+						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+						return;
+					}
+				}
+				else
+				{
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					return;
+				}
+
+			}
+		}
+	}
+
+
+	void Cserialport::OnBnClickedRVersion()
+	{
+		// TODO: 在此添加控件通知处理程序代码
+		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
+		{
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			return;
+		}
+		else {
+			if (processcount != 0 && processcount != 288)
+			{
+				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				return;
+			}
+			else {
+				m_note.SetWindowText(_T(""));
+				CString ZL;
+				ZL = ZL_VERSION + Get_paritybit(ZL_VERSION);
+				COM_write(ZL.GetLength(), ZL);
+				OVERLAPPED de_lay;
+				memset(&de_lay, 0, sizeof(OVERLAPPED));
+				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+				WaitForSingleObject(de_lay.hEvent, 20);
+				CString Recv;
+				COM_read(20, Recv);
+				m_recview.SetWindowText(_T(""));
+				m_recview.SetSel(-1, -1); //自动滚屏 
+				m_recview.ReplaceSel(Recv + "\r\n"); //自动换行 
+				UpdateData(true);
+				m_recvcount = "";
+				m_recvcount.Format(_T("%d"), Recv.GetLength() / 12);
+				m_recvcount += "/1";
+				UpdateData(FALSE);
+				if (Recv.GetLength() == 12 && Recv.Left(2) == "01")
+				{
+					CString Recv_ZL_JY = Get_paritybit(Recv.Left(10));
+					if (Recv_ZL_JY == Recv.Mid(10, 2))
+					{
+						//固件版本
+						CString temp;
+						temp.Format(_T("%d"), HexToDem(Recv.Mid(2,2)));
+						m_version += temp + '.';
+						temp.Format(_T("%d"), HexToDem(Recv.Mid(4, 2)));
+						m_version += temp + '.';
+						temp.Format(_T("%d"), HexToDem(Recv.Mid(6, 2)));
+						m_version += temp + '.';
+						temp.Format(_T("%d"), HexToDem(Recv.Mid(8, 2)));
+						m_version += temp;
+						UpdateData(FALSE);
+						m_note.SetWindowText(_T("成功(Successfully read)"));
+					}
+					else
+					{
+						m_boardnum = "null";
+						UpdateData(FALSE);
+						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+						return;
+					}
+				}
+				else
+				{
+					m_boardnum = "null";
+					UpdateData(FALSE);
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					return;
+				}
+
+			}
+		}
 	}

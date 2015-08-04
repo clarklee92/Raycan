@@ -34,16 +34,24 @@ private:
 	bool flag_Initialization;
 public:
 	int data[72][4];//矩阵存储数据
+	int biaseddata[72][4];
+	int delayeddata[72][8];
 	CString viewStr,viewcount;//用于显示和计数
 
 	
 private:
 	//复位指令
 	CString ZL_RT;//复位指令
+	CString ZL_PE;//开放写板号权限指令
+	CString ZL_SHUTPE;//关闭写板号权限指令
+	CString ZL_VERSION;//获取版本信息
 	  
 
 	//读指令集   板子编号   IP  
 	CString R_ZL_boardnumber;//板子编号查询指令
+	CString R_ZL_maxbin1;//maxbin查询指令
+	CString R_ZL_maxbin2;
+	CString R_ZL_maxbin3;
 	CString R_ZL_IP1;//IP查询指令
 	CString R_ZL_IP2;
 	CString R_ZL_IP3;
@@ -51,6 +59,9 @@ private:
 
 	//写指令集  板子编号   IP     
 	CString W_ZL_boardnumber;//+板子编号0000
+	CString W_ZL_maxbin1;//+maxbin1
+	CString W_ZL_maxbin2;//+maxbin2
+	CString W_ZL_maxbin3;//+maxbin3
 	CString W_ZL_IP1;//+ip1+xx(ip)+00
 	CString W_ZL_IP2;//+ip2
 	CString W_ZL_IP3;//+ip3
@@ -74,8 +85,8 @@ public:
 	byte* htb(CString buf);
 	CString bth(byte*buf);
 	CString Get_paritybit(CString data);
-	void comm_DataReceived();
 	CString m_boardnum;
+	CString filepathstr;
 	afx_msg void OnBnClickedWriteboardnum();
 	int m_threshold1;
 	int m_threshold2;
@@ -84,15 +95,12 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg void OnClickedWriteip();
 	afx_msg void OnClickedReadip();
-	CStatic m_numnote;
+	CStatic m_note;
 	afx_msg void OnClickedClosecomm();
-	CStatic m_ipnote;
 	afx_msg void OnClickedReset();
 	afx_msg void OnClickedRead();
-	CString m_filepath;
 	afx_msg void OnClickedSenddata();
 	afx_msg void OnClickedWrite();
-	afx_msg void OnEnChangeRecview();
 	CEdit m_recview;
 	CProgressCtrl m_progressctrl;//进度条
 	CString m_percent;
@@ -103,4 +111,16 @@ public:
 	void SendData();
 	CString m_recvcount;
 	afx_msg void OnBnClickedStopsenddata();
+	bool switchflag = false;//权限获取标志
+	int filetype;
+	afx_msg void OnBnClickedPermit();
+	afx_msg void OnBnClickedChosefile();
+	int m_typeofdata;
+	afx_msg void OnBnClickedWritemaxbin();
+	afx_msg void OnBnClickedReadmaxbin();
+	CString m_maxbin1;
+	CString m_maxbin2;
+	CString m_maxbin3;
+	afx_msg void OnBnClickedRVersion();
+	CString m_version;
 };
