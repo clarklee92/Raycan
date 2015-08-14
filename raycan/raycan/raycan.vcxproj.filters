@@ -45,6 +45,9 @@
     <ClInclude Include="Coperation.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Password.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="raycan.cpp">
@@ -66,6 +69,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Coperation.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Password.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

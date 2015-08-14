@@ -26,13 +26,11 @@ public:
 	void Recv();
 	BOOL InitSocket();
 	bool OnSaveas();
-	void TextOut();
 	CString byteToHexStr(byte byte_arr[], int arr_len);
 	static DWORD WINAPI RecvProc(LPVOID lpParameter);//抓包子线程函数
 	static DWORD WINAPI SpeedProc(LPVOID lpParameter);//存储子线程程序
 	static DWORD WINAPI Stopbysize(LPVOID lpParameter);//収包计数子线程函数
 	static DWORD WINAPI Stopbytime(LPVOID lpParameter);//収包计时子线程函数
-	void DrawItem(CString strInfo[10], int ID);
 	CListCtrl m_packetlist;
 	int retval;
 	unsigned long packetcount;
@@ -55,6 +53,7 @@ public:
 	CEdit m_speed;
 	//int num_temp = 0;
 	//double t_temp = 0;
+	int time; //手动抓包计时
 	unsigned int m_nPos = 0;
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	CProgressCtrl m_timegoing;
@@ -66,4 +65,6 @@ public:
 	CString m_timesecond;
 	CString m_timehour;
 	CString m_thousand;
+	CEdit m_time;
+	CEdit m_size;
 };

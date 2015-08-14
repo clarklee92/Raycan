@@ -104,6 +104,7 @@
     <ClInclude Include="calibration.h" />
     <ClInclude Include="Coperation.h" />
     <ClInclude Include="ini.h" />
+    <ClInclude Include="Password.h" />
     <ClInclude Include="raycan.h" />
     <ClInclude Include="raycanDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -115,6 +116,7 @@
     <ClCompile Include="calibration.cpp" />
     <ClCompile Include="Coperation.cpp" />
     <ClCompile Include="ini.cpp" />
+    <ClCompile Include="Password.cpp" />
     <ClCompile Include="raycan.cpp" />
     <ClCompile Include="raycanDlg.cpp" />
     <ClCompile Include="serialport.cpp" />

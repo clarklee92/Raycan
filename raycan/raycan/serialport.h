@@ -88,10 +88,6 @@ public:
 	CString m_boardnum;
 	CString filepathstr;
 	afx_msg void OnBnClickedWriteboardnum();
-	int m_threshold1;
-	int m_threshold2;
-	int m_threshold3;
-	int m_threshold4;
 	afx_msg void OnDestroy();
 	afx_msg void OnClickedWriteip();
 	afx_msg void OnClickedReadip();
@@ -123,4 +119,8 @@ public:
 	CString m_maxbin3;
 	afx_msg void OnBnClickedRVersion();
 	CString m_version;
+	CString m_threshold1;
+	CString m_threshold2;
+	CString m_threshold3;
+	CString m_threshold4;
 };

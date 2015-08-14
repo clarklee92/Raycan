@@ -43,6 +43,8 @@ void Ccalibration::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SECOND, m_timesecond);
 	DDX_Text(pDX, IDC_HOUR, m_timehour);
 	DDX_Text(pDX, IDC_THOUGHD, m_thousand);
+	DDX_Control(pDX, IDC_TIME, m_time);
+	DDX_Control(pDX, IDC_AMOUNT, m_size);
 }
 
 
@@ -155,6 +157,7 @@ bool Ccalibration::OnSaveas()
 
 void Ccalibration::Recv()
 {
+	Sleep(800);
 	InitSocket();
 	LARGE_INTEGER litmp;
 	LONGLONG QPart1, QPart2;
@@ -189,7 +192,20 @@ void Ccalibration::Recv()
 			CString str;
 			str.Format(_T("%.lf"), speed);
 			m_speed.SetWindowText(str);
+
+			CString temp_1, temp_2;
+			str.Format(_T("%d"), packetcount);
+			temp_1.Format(_T("%d"), packetcount / 1000000);
+			temp_2.Format(_T("%03d"), (packetcount % 1000000) / 1000);
+			str.Format(_T("%03d"), (packetcount % 1000000) % 1000);
+			m_size.SetWindowText(temp_1 + ',' + temp_2 + ',' + str);
+			time = (int)dfTimsum;
+			temp_1.Format(_T("%d"), time / 3600);
+			temp_2.Format(_T("%02d"), (time % 3600) / 60);
+			str.Format(_T("%02d"), (time % 3600) % 60);
+			m_time.SetWindowText(temp_1 + ':' + temp_2 + ':' + str);
 			closesocket(m_socket);
+
 			CButton *Begaintime = (CButton *)GetDlgItem(IDC_BEGAINTIME);
 			Begaintime->EnableWindow(TRUE);
 			CButton *stopbysize = (CButton *)GetDlgItem(IDC_STOPBYSIZE);
@@ -259,7 +275,8 @@ DWORD WINAPI Ccalibration::RecvProc(LPVOID lpParameter)
 DWORD WINAPI Ccalibration::SpeedProc(LPVOID lpParameter)
 {
 	Ccalibration* pDlg = (Ccalibration*)lpParameter;
-	pDlg->SetTimer(1, 200, NULL);
+	pDlg->time = 0;
+	pDlg->SetTimer(1, 1000, NULL);
 	pDlg->SetTimer(2, 10, NULL);
 	return 0;
 }
@@ -386,13 +403,14 @@ void Ccalibration::OnClickedStopbysize()
 DWORD WINAPI Ccalibration::Stopbysize(LPVOID lpParameter)
 {
 	Ccalibration* pDlg = (Ccalibration*)lpParameter;
-	while (TRUE)
+	for (int i = 1;i < 2;i++)
 	{
 		if (pDlg->packetcount >= (unsigned long)(_ttoi(pDlg->m_packets) + _ttoi(pDlg->m_thousand) * 1000 + _ttoi(pDlg->m_million) * 1000000) || pDlg->Threadflag == true)
 		{
 			pDlg->Threadflag = true;
 			break;
 		}
+		i--;
 	}
 	return 0;
 }
@@ -400,13 +418,14 @@ DWORD WINAPI Ccalibration::Stopbysize(LPVOID lpParameter)
 DWORD WINAPI Ccalibration::Stopbytime(LPVOID lpParameter)
 {
 	Ccalibration* pDlg = (Ccalibration*)lpParameter;
-	while (TRUE)
+	for (int i = 1;i < 2;i++)
 	{
 		if (pDlg->dfTimsum >= (_ttoi(pDlg->m_timehour) * 3600 + _ttoi(pDlg->m_timeminute) * 60 + _ttoi(pDlg->m_timesecond)) || pDlg->Threadflag == true)
 		{
 			pDlg->Threadflag = true;
 			break;
 		}
+		i--;
 	}
 	return 0;
 }
@@ -452,15 +471,29 @@ void Ccalibration::OnTimer(UINT_PTR nIDEvent)
 
 	if (nIDEvent == 1)
 	{
+		if (dfTimsum==0)
+		{
+			return;
+		}
 		double speed = (packetcount /*- num_temp*/) / (dfTimsum/* - t_temp*/);
 		speed = speed * 48 / 1000;
-		CString str;
+		CString str,temp_1,temp_2;
 		str.Format(_T("%.lf"), speed);
 		m_speed.SetWindowText(str);
+		temp_1.Format(_T("%d"), packetcount / 1000000);
+		temp_2.Format(_T("%03d"), (packetcount % 1000000) / 1000);
+		str.Format(_T("%03d"), (time % 1000000) % 1000);
+		m_size.SetWindowText(temp_1 + ',' + temp_2 + ',' + str);
+		temp_1.Format(_T("%d"), time / 3600);
+		temp_2.Format(_T("%02d"), (time%3600)/60);	
+		str.Format(_T("%02d"), (time % 3600)%60);
+		m_time.SetWindowText(temp_1+':'+ temp_2+':'+str);
+		time++;
 		/*num_temp = packetcount;
 		t_temp = dfTimsum;*/
 	}
-	else{
+	if(nIDEvent==2)
+	{
 		//进度条
 
 

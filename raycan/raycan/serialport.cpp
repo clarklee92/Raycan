@@ -6,6 +6,7 @@
 #include "serialport.h"
 #include "afxdialogex.h"
 #include "ini.h"
+#include "Password.h"
 
 // Cserialport 对话框
 
@@ -23,19 +24,19 @@ Cserialport::Cserialport(CWnd* pParent /*=NULL*/)
 	, m_maxbin2(_T(""))
 	, m_maxbin3(_T(""))
 	, m_version(_T(""))
+	, m_threshold1(_T(""))
+	, m_threshold2(_T(""))
+	, m_threshold3(_T(""))
+	, m_threshold4(_T(""))
 {
 	flag_Initialization = false;
-	m_threshold1 = 0;
-	m_threshold2 = 0;
-	m_threshold3 = 0;
-	m_threshold4 = 0;
 	Recv_ZL = "0100000000fe";
 	ZL_RT = "0000000000";
 	ZL_PE = "0500000000";
 	ZL_SHUTPE = "0500000008";
 	ZL_VERSION = "0200000000";
-	
-	R_ZL_boardnumber ="2600000000";
+
+	R_ZL_boardnumber = "2600000000";
 	R_ZL_IP1 = "2100040000";
 	R_ZL_IP2 = "2100030000";
 	R_ZL_IP3 = "2100020000";
@@ -75,20 +76,20 @@ void Cserialport::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_VALUE, m_value);
 	DDX_Control(pDX, IDC_IPADDRESS, m_ipaddress);
 	DDX_Text(pDX, IDC_BOARDNUM, m_boardnum);
-	DDX_Text(pDX, IDC_THRESHOLD1, m_threshold1);
-	DDX_Text(pDX, IDC_THRESHOLD2, m_threshold2);
-	DDX_Text(pDX, IDC_THRESHOLD3, m_threshold3);
-	DDX_Text(pDX, IDC_THRESHOLD4, m_threshold4);
 	DDX_Control(pDX, IDC_TEXT, m_note);
 	DDX_Control(pDX, IDC_RECVIEW, m_recview);
 	DDX_Control(pDX, IDC_PROGRESS, m_progressctrl);
 	DDX_Text(pDX, IDC_PERCENT, m_percent);
 	DDX_Text(pDX, IDC_RECVCOUNT, m_recvcount);
-	DDX_Radio(pDX, IDC_RADIO1, m_typeofdata);
+	DDX_Radio(pDX, IDC_RADIO, m_typeofdata);
 	DDX_Text(pDX, IDC_MAXBIN1, m_maxbin1);
 	DDX_Text(pDX, IDC_MAXBIN2, m_maxbin2);
 	DDX_Text(pDX, IDC_MAXBIN3, m_maxbin3);
 	DDX_Text(pDX, IDC_VERSION, m_version);
+	DDX_Text(pDX, IDC_THRESHOLD1, m_threshold1);
+	DDX_Text(pDX, IDC_THRESHOLD2, m_threshold2);
+	DDX_Text(pDX, IDC_THRESHOLD3, m_threshold3);
+	DDX_Text(pDX, IDC_THRESHOLD4, m_threshold4);
 }
 
 
@@ -132,10 +133,10 @@ BOOL Cserialport::OnInitDialog()
 	processcount = 0;
 	//读取各项ini值
 	UpdateData(TRUE);
-	this->m_threshold1 = Cini::ReadInt(_T("Threshold"), _T("Threshold1"), _T("raycan.ini"));
-	this->m_threshold2 = Cini::ReadInt(_T("Threshold"), _T("Threshold2"), _T("raycan.ini"));
-	this->m_threshold3 = Cini::ReadInt(_T("Threshold"), _T("Threshold3"), _T("raycan.ini"));
-	this->m_threshold4 = Cini::ReadInt(_T("Threshold"), _T("Threshold4"), _T("raycan.ini"));
+	this->m_threshold1.Format(_T("%d"),Cini::ReadInt(_T("Threshold"), _T("Threshold1"), _T("raycan.ini")));
+	this->m_threshold2.Format(_T("%d"), Cini::ReadInt(_T("Threshold"), _T("Threshold2"), _T("raycan.ini")));
+	this->m_threshold3.Format(_T("%d"), Cini::ReadInt(_T("Threshold"), _T("Threshold3"), _T("raycan.ini")));
+	this->m_threshold4.Format(_T("%d"), Cini::ReadInt(_T("Threshold"), _T("Threshold4"), _T("raycan.ini")));
 	UpdateData(FALSE);
 	//获取可用串口
 	CString  strCom, strComOpen;
@@ -558,7 +559,7 @@ void Cserialport::OnClickedReadboardnum()
 			OVERLAPPED de_lay;
 			memset(&de_lay, 0, sizeof(OVERLAPPED));
 			de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-			WaitForSingleObject(de_lay.hEvent, 20);
+			WaitForSingleObject(de_lay.hEvent, 30);
 			CString Recv;
 			COM_read(20, Recv);
 			m_recview.SetWindowText(_T(""));
@@ -652,7 +653,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 						OVERLAPPED de_lay;
 						memset(&de_lay, 0, sizeof(OVERLAPPED));
 						de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-						WaitForSingleObject(de_lay.hEvent, 20);
+						WaitForSingleObject(de_lay.hEvent, 30);
 						CString Recv;
 						COM_read(20, Recv);
 						m_recview.SetWindowText(_T(""));
@@ -720,22 +721,22 @@ void Cserialport::OnBnClickedWriteboardnum()
 					IP1 = IP_Str.Mid(0, 2);
 					ZL = W_ZL_IP1 + "00" + IP1 + Get_paritybit(W_ZL_IP1 + IP1 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 20);
+					WaitForSingleObject(de_lay.hEvent, 30);
 					COM_read(20, Recv1);
 					IP2 = IP_Str.Mid(2, 2);
 					ZL = W_ZL_IP2 + "00" + IP2 + Get_paritybit(W_ZL_IP2 + IP2 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 20);
+					WaitForSingleObject(de_lay.hEvent, 30);
 					COM_read(20, Recv2);
 					IP3 = IP_Str.Mid(4, 2);
 					ZL = W_ZL_IP3 + "00" + IP3 + Get_paritybit(W_ZL_IP3 + IP3 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 20);
+					WaitForSingleObject(de_lay.hEvent, 30);
 					COM_read(20, Recv3);
 					IP4 = IP_Str.Mid(6, 8);
 					ZL = W_ZL_IP4 + "00" + IP4 + Get_paritybit(W_ZL_IP4 + IP4 + _T("00"));
 					COM_write(ZL.GetLength(), ZL);
-					WaitForSingleObject(de_lay.hEvent, 20);
+					WaitForSingleObject(de_lay.hEvent, 30);
 					COM_read(20, Recv4);
 					CString Recv;
 					Recv = Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ") + Recv4 + _T("       ");
@@ -785,7 +786,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 				ZL = R_ZL_IP1 + Get_paritybit(R_ZL_IP1);
 				COM_write(ZL.GetLength(), ZL);
-				WaitForSingleObject(de_lay.hEvent, 20);
+				WaitForSingleObject(de_lay.hEvent, 30);
 				COM_read(20, Recv1);
 				if (Recv1.GetLength() == 12 && Recv1.Left(2) == "01" && Recv1.Mid(2, 4) == "0000")
 				{
@@ -797,7 +798,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 						IP1.Format(_T("%d"), HexToDem(Recv1.Mid(8, 2)));
 						ZL = R_ZL_IP2 + Get_paritybit(R_ZL_IP2);
 						COM_write(ZL.GetLength(), ZL);
-						WaitForSingleObject(de_lay.hEvent, 20);
+						WaitForSingleObject(de_lay.hEvent, 30);
 						COM_read(20, Recv2);
 						if (Recv2.GetLength() == 12 && Recv2.Left(2) == "01" && Recv2.Mid(2, 4) == "0000")
 						{
@@ -809,7 +810,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 								IP2.Format(_T("%d"), HexToDem(Recv2.Mid(8, 2)));
 								ZL = R_ZL_IP3 + Get_paritybit(R_ZL_IP3);
 								COM_write(ZL.GetLength(), ZL);
-								WaitForSingleObject(de_lay.hEvent, 20);
+								WaitForSingleObject(de_lay.hEvent, 30);
 								COM_read(20, Recv3);				
 								if (Recv3.GetLength() == 12 && Recv3.Left(2) == "01" && Recv3.Mid(2, 4) == "0000")
 								{
@@ -821,7 +822,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 										IP3.Format(_T("%d"), HexToDem(Recv3.Mid(8, 2)));
 										ZL = R_ZL_IP4 + Get_paritybit(R_ZL_IP4);
 										COM_write(ZL.GetLength(), ZL);
-										WaitForSingleObject(de_lay.hEvent, 20);
+										WaitForSingleObject(de_lay.hEvent, 30);
 										COM_read(20, Recv4);
 										m_recview.SetWindowText(_T(""));
 										m_recview.ReplaceSel(Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ") + Recv4 + _T("       ") + "\r\n"); //自动换行 
@@ -903,18 +904,10 @@ void Cserialport::OnBnClickedWriteboardnum()
 			}	*/
 		//保存ini各项值
 		UpdateData(TRUE);
-		CString str;
-		str.Format(_T("%d"), this->m_threshold1);
-		Cini::WriteString(_T("Threshold"), _T("Threshold1"), str, _T("raycan.ini"));
-
-		str.Format(_T("%d"), this->m_threshold2);
-		Cini::WriteString(_T("Threshold"), _T("Threshold2"), str, _T("raycan.ini"));
-
-		str.Format(_T("%d"), this->m_threshold3);
-		Cini::WriteString(_T("Threshold"), _T("Threshold3"), str, _T("raycan.ini"));
-
-		str.Format(_T("%d"), this->m_threshold4);
-		Cini::WriteString(_T("Threshold"), _T("Threshold4"), str, _T("raycan.ini"));
+		Cini::WriteString(_T("Threshold"), _T("Threshold1"), m_threshold1, _T("raycan.ini"));
+		Cini::WriteString(_T("Threshold"), _T("Threshold2"), m_threshold2, _T("raycan.ini"));
+		Cini::WriteString(_T("Threshold"), _T("Threshold3"), m_threshold3, _T("raycan.ini"));
+		Cini::WriteString(_T("Threshold"), _T("Threshold4"), m_threshold4, _T("raycan.ini"));
 	}
 
 	void Cserialport::OnClickedClosecomm()
@@ -1009,7 +1002,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 				OVERLAPPED de_lay;
 				memset(&de_lay, 0, sizeof(OVERLAPPED));
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 20);
+				WaitForSingleObject(de_lay.hEvent, 30);
 				CString Recv;
 				COM_read(20, Recv);
 				m_recview.SetWindowText(_T(""));
@@ -1074,7 +1067,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 				OVERLAPPED de_lay;
 				memset(&de_lay, 0, sizeof(OVERLAPPED));
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 20);
+				WaitForSingleObject(de_lay.hEvent, 30);
 				CString Recv;
 				COM_read(20, Recv);
 				m_recview.SetWindowText(_T(""));
@@ -1109,17 +1102,17 @@ void Cserialport::OnBnClickedWriteboardnum()
 		}	
 		else{	
 			UpdateData(TRUE);
-			if (switchflag == false && (m_typeofdata == 1 || m_typeofdata == 2))
+			if (switchflag == false && (m_typeofdata == 0 || m_typeofdata == 2))
 			{
 				MessageBox(_T("没有权限!\nNo permission!"));
 				return;
 			}
-			if (filepathstr=="" && (m_typeofdata == 1 || m_typeofdata == 2))
+			if (filepathstr=="" && (m_typeofdata == 0|| m_typeofdata == 2))
 			{
 				MessageBox(_T("请选取文件!\nTXT file needed!"));
 				return;
 			}
-			if ((m_typeofdata == 1 && filetype == 2) || (m_typeofdata == 2 && filetype == 1))
+			if ((m_typeofdata == 2 && filetype == 2) || (m_typeofdata == 0 && filetype == 1))
 			{
 				MessageBox(_T("请选择正确的文件!\nPlease choose correct file!"));
 				CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
@@ -1151,7 +1144,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加消息处理程序代码和/或调用默认值
 		UpdateData(TRUE);
 		int factor;
-		if (m_typeofdata==0||m_typeofdata==1)
+		if (m_typeofdata==1||m_typeofdata==2)
 		{
 			factor = 1;
 		}
@@ -1203,14 +1196,14 @@ void Cserialport::OnBnClickedWriteboardnum()
 		SetTimer(1, 1000, NULL);//设置进度条更新时钟
 		CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
 		Stopsenddata->EnableWindow(TRUE);		
-		if (m_typeofdata == 0)
+		if (m_typeofdata == 1)
 			{
 				for (int i = 0; i < 72; i++)
 				{
-					data[i][0] = m_threshold1;
-					data[i][1] = m_threshold2;
-					data[i][2] = m_threshold3;
-					data[i][3] = m_threshold4;
+					data[i][0] = _ttoi(m_threshold1);
+					data[i][1] = _ttoi(m_threshold2);
+					data[i][2] = _ttoi(m_threshold3);
+					data[i][3] = _ttoi(m_threshold4);
 				}
 				for (int i = 0; i < 72; i++)
 				{
@@ -1250,7 +1243,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 					}
 				}
 			}
-			if (m_typeofdata == 1)
+			if (m_typeofdata == 2)
 			{
 				for (int i = 0; i < 72; i++)
 				{
@@ -1289,7 +1282,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 					}
 				}
 			}
-			if (m_typeofdata == 2)
+			if (m_typeofdata == 0)
 			{
 				for (int i = 0; i < 72; i++)
 				{
@@ -1355,6 +1348,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 				return;
 			}
 			else {
+		
 				CString ZL;
 				if (switchflag==true)
 				{
@@ -1362,12 +1356,31 @@ void Cserialport::OnBnClickedWriteboardnum()
 				}
 				else{
 				ZL = ZL_PE + Get_paritybit(ZL_PE);
+				CPassword dlg;
+				int ret = dlg.DoModal();
+				if (IDCANCEL==ret)
+				{
+					return;
+				}
+				if (IDOK == ret)
+				{
+					if (dlg.m_password != _T("333333")&& dlg.m_password != _T(""))
+					{
+						MessageBox(_T("密码错误!\nWrong Password!"));
+						return;
+					}
+					if (dlg.m_password == _T(""))
+					{
+						MessageBox(_T("请输入密码!\nNo Password!"));
+						return;
+					}
+				}
 				}
 				COM_write(ZL.GetLength(), ZL);
 				OVERLAPPED de_lay;
 				memset(&de_lay, 0, sizeof(OVERLAPPED));
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 20);
+				WaitForSingleObject(de_lay.hEvent, 30);
 				CString Recv;
 				COM_read(20, Recv);
 				m_recview.SetWindowText(_T(""));
@@ -1405,7 +1418,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 	{
 		// TODO: 在此添加控件通知处理程序代码
 		UpdateData(TRUE);
-		if (m_typeofdata == 0)
+		if (m_typeofdata == 1)
 		{
 			MessageBox(_T("不需要读取文件!\nThere is no need to open a file!"));
 			return;
@@ -1424,7 +1437,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 			{
 				CStdioFile file;
 				CString m_sample_data, m_strline;
-				if (m_typeofdata == 1)
+				if (m_typeofdata == 2)
 				{
 					int temp[72 * 4];
 					file.Open(filepathstr, CFile::modeRead | CFile::typeText);
@@ -1457,7 +1470,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 					file.Close();
 					
 				}
-				if (m_typeofdata == 2)
+				if (m_typeofdata == 0)
 				{
 					int temp[72 * 8];
 					file.Open(filepathstr, CFile::modeRead | CFile::typeText);
@@ -1539,15 +1552,15 @@ void Cserialport::OnBnClickedWriteboardnum()
 						de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 						ZL = W_ZL_maxbin1 + DemToHex(m_maxbin1) + Get_paritybit(W_ZL_maxbin1 + DemToHex(m_maxbin1));
 						COM_write(ZL.GetLength(), ZL);
-						WaitForSingleObject(de_lay.hEvent, 20);
+						WaitForSingleObject(de_lay.hEvent, 30);
 						COM_read(20, Recv1);
 						ZL = W_ZL_maxbin2 + DemToHex(m_maxbin2) + Get_paritybit(W_ZL_maxbin2 + DemToHex(m_maxbin2));
 						COM_write(ZL.GetLength(), ZL);
-						WaitForSingleObject(de_lay.hEvent, 20);
+						WaitForSingleObject(de_lay.hEvent, 30);
 						COM_read(20, Recv2);
 						ZL = W_ZL_maxbin3 + DemToHex(m_maxbin3) + Get_paritybit(W_ZL_maxbin3 + DemToHex(m_maxbin3));
 						COM_write(ZL.GetLength(), ZL);
-						WaitForSingleObject(de_lay.hEvent, 20);
+						WaitForSingleObject(de_lay.hEvent, 30);
 						COM_read(20, Recv3);
 						CString Recv;
 						Recv = Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ");
@@ -1600,7 +1613,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 				ZL = R_ZL_maxbin1 + Get_paritybit(R_ZL_maxbin1);
 				COM_write(ZL.GetLength(), ZL);
-				WaitForSingleObject(de_lay.hEvent, 20);
+				WaitForSingleObject(de_lay.hEvent, 30);
 				COM_read(20, Recv1);
 				if (Recv1.GetLength() == 12 && Recv1.Left(2) == "01" && Recv1.Mid(2, 4) == "0000")
 				{
@@ -1613,7 +1626,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 						UpdateData(FALSE);
 						ZL = R_ZL_maxbin2 + Get_paritybit(R_ZL_maxbin2);
 						COM_write(ZL.GetLength(), ZL);
-						WaitForSingleObject(de_lay.hEvent, 20);
+						WaitForSingleObject(de_lay.hEvent, 30);
 						COM_read(20, Recv2);
 						if (Recv2.GetLength() == 12 && Recv2.Left(2) == "01" && Recv2.Mid(2, 4) == "0000")
 						{
@@ -1626,7 +1639,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 								UpdateData(FALSE);
 								ZL = R_ZL_maxbin3 + Get_paritybit(R_ZL_maxbin3);
 								COM_write(ZL.GetLength(), ZL);
-								WaitForSingleObject(de_lay.hEvent, 20);
+								WaitForSingleObject(de_lay.hEvent, 30);
 								COM_read(20, Recv3);
 								m_recview.SetWindowText(_T(""));
 								m_recview.ReplaceSel(Recv1 + _T("       ") + Recv2 + _T("       ") + Recv3 + _T("       ") + "\r\n"); //自动换行 
@@ -1709,7 +1722,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 				OVERLAPPED de_lay;
 				memset(&de_lay, 0, sizeof(OVERLAPPED));
 				de_lay.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				WaitForSingleObject(de_lay.hEvent, 20);
+				WaitForSingleObject(de_lay.hEvent, 30);
 				CString Recv;
 				COM_read(20, Recv);
 				m_recview.SetWindowText(_T(""));
@@ -1727,6 +1740,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 					{
 						//固件版本
 						CString temp;
+						m_version = _T("");
 						temp.Format(_T("%d"), HexToDem(Recv.Mid(2,2)));
 						m_version += temp + '.';
 						temp.Format(_T("%d"), HexToDem(Recv.Mid(4, 2)));
