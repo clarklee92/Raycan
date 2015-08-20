@@ -92,14 +92,14 @@ BOOL Ccalibration::InitSocket()
 	int ret = WSAStartup(MAKEWORD(2, 2), &wsadata);
 	if (ret != 0)
 	{
-		MessageBox(_T("初始化网络协议失败!\nFailed to initialize the network protocol!"));
+		MessageBox(_T("初始化网络协议失败!\nFailed to initialize the network protocol!"), _T(""));
 		return FALSE;
 	}
 	m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); //基于udp  
 
 	if (INVALID_SOCKET == m_socket)
 	{
-		MessageBox(_T("套接字创建失败！\nSocket creation failed！"));
+		MessageBox(_T("套接字创建失败！\nSocket creation failed！"), _T(""));
 		return FALSE;
 	}
 	SOCKADDR_IN addrSock;
@@ -113,7 +113,7 @@ BOOL Ccalibration::InitSocket()
 	if (SOCKET_ERROR == retval)
 	{
 		closesocket(m_socket);
-		MessageBox(_T("网络端口绑定失败!\nNetwork port binding failed!"));
+		MessageBox(_T("网络端口绑定失败!\nNetwork port binding failed!"), _T(""));
 		return FALSE;
 	}
 	return TRUE;
@@ -144,7 +144,7 @@ bool Ccalibration::OnSaveas()
 		{
 			if (!CreateDirectory(g_strProjectPath, NULL))//创建路径失败则弹出MessageBox
 			{
-				AfxMessageBox(_T("路径创建失败，请重试！\nProject path creation failed, please try again！"));
+				MessageBox(_T("路径创建失败，请重试！\nProject path creation failed, please try again！"), _T(""));
 				return false;
 			}
 		}
@@ -212,7 +212,7 @@ void Ccalibration::Recv()
 			stopbysize->EnableWindow(TRUE);
 			CButton *Stopbytime = (CButton *)GetDlgItem(IDC_STOPBYTIME);
 			Stopbytime->EnableWindow(TRUE);
-			MessageBox(_T("抓包完成!\nCapture complete!"));
+			MessageBox(_T("抓包完成!\nCapture complete!"), _T(""));
 			break;
 		}
 		QueryPerformanceCounter(&litmp);         //获取开始计数值
@@ -228,7 +228,7 @@ void Ccalibration::Recv()
 			KillTimer(1);
 			KillTimer(2);
 			m_speed.SetWindowText(_T(""));
-			MessageBox(_T("请检查网络连接和IP设置！\nPlease check your network connection and IP settings！"));
+			MessageBox(_T("请检查网络连接和IP设置！\nPlease check your network connection and IP settings！"), _T(""));
 			CButton *Begaintime = (CButton *)GetDlgItem(IDC_BEGAINTIME);
 			Begaintime->EnableWindow(TRUE);
 			CButton *stopbysize = (CButton *)GetDlgItem(IDC_STOPBYSIZE);
@@ -372,12 +372,12 @@ void Ccalibration::OnClickedStopbysize()
 	int x = _ttoi(m_million);
 	if (_ttoi(m_packets) >999 || _ttoi(m_thousand)  > 999 || _ttoi(m_million) > 3)
 	{
-		MessageBox(_T("超过范围！\nout of range！"));
+		MessageBox(_T("超过范围！\nout of range！"), _T(""));
 		return;
 	}
 	if (_ttoi(m_packets) + _ttoi(m_thousand) * 1000 + _ttoi(m_million) * 1000000 == 0)
 	{
-		MessageBox(_T("请输入抓包数！\nPlease input the amount！"));
+		MessageBox(_T("请输入抓包数！\nPlease input the amount！"), _T(""));
 		return;
 	}
 	Stopbysizeflag = true;
@@ -436,12 +436,12 @@ void Ccalibration::OnClickedStopbytime()
 	UpdateData(TRUE);
 	if (_ttoi(m_timesecond)>59 || _ttoi(m_timeminute)>59 || _ttoi(m_timehour)>2)
 	{
-		MessageBox(_T("超出范围！\nout of range！"));
+		MessageBox(_T("超出范围！\nout of range！"), _T(""));
 		return;
 	}
 	if (_ttoi(m_timesecond) + _ttoi(m_timeminute) * 60 + _ttoi(m_timehour) * 3600 == 0)
 	{
-		MessageBox(_T("请输入抓包时间！\nPlease input the time！"));
+		MessageBox(_T("请输入抓包时间！\nPlease input the time！"), _T(""));
 		return;
 	}
 	Stopbytimeflag = true;

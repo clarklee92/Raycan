@@ -270,7 +270,7 @@ void Cserialport::OnClickedOpencomm()
 	CString Str;
 	if (m_commport.GetCount() == 0)
 	{
-		MessageBox(_T("没有可用的串口!\nNo free serial port!"));
+		MessageBox(_T("没有可用的串口!\nNo free serial port!"), _T(""));
 		return;
 	}
 	m_commport.GetLBText(m_commport.GetCurSel(), Str);
@@ -283,12 +283,12 @@ void Cserialport::OnClickedOpencomm()
 		NULL);
 	if (hCom == INVALID_HANDLE_VALUE)
 	{
-		MessageBox(_T("串口打开失败!\nSerial port open failed!"));
+		MessageBox(_T("串口打开失败!\nSerial port open failed!"),_T(""));
 		return;
 	}
 	else{
 		flag_Initialization = true;
-		MessageBox(_T("串口打开成功!\nSerial port open successfully!"));
+		MessageBox(_T("串口打开成功!\nSerial port open successfully!"), _T(""));
 		SetupComm(hCom,1024,1024);
 		COMMTIMEOUTS TimeOuts; //设定读超时 
 		TimeOuts.ReadIntervalTimeout=1000;  
@@ -542,13 +542,13 @@ void Cserialport::OnClickedReadboardnum()
 	// TODO:  在此添加控件通知处理程序代码
 	if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0||flag_Initialization==false)
 	{
-		MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+		MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 		return;
 	}
 	else{
 		if (processcount != 0 && processcount != 288)
 		{
-			MessageBox(_T("串口正忙!\nSerial port is busy!"));
+			MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 			return;
 		}
 		else{
@@ -585,7 +585,7 @@ void Cserialport::OnClickedReadboardnum()
 				{
 					m_boardnum = "null";
 					UpdateData(FALSE);
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 			}
@@ -593,7 +593,7 @@ void Cserialport::OnClickedReadboardnum()
 			{
 				m_boardnum = "null";
 				UpdateData(FALSE);
-				MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+				MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 				return;
 			}
 
@@ -607,25 +607,25 @@ void Cserialport::OnBnClickedWriteboardnum()
 	// TODO:  在此添加控件通知处理程序代码
 	if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 	{
-		MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+		MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 		return;
 	}
 	else{
 		if (processcount != 0 && processcount != 288)
 		{
-			MessageBox(_T("串口正忙!\nSerial port is busy!"));
+			MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 			return;
 		}
 		else{
 			UpdateData(TRUE);
 			if (switchflag == false)
 			{
-				MessageBox(_T("没有权限!\nNo permission!"));
+				MessageBox(_T("没有权限!\nNo permission!"), _T(""));
 				return;
 			}
 			if (m_boardnum.IsEmpty())
 			{
-				MessageBox(_T("请输入板号!\nPlease input the NUM!"));
+				MessageBox(_T("请输入板号!\nPlease input the NUM!"), _T(""));
 				return;
 			}
 			else{
@@ -637,7 +637,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 						flag++;
 					}
 					else{
-						MessageBox(_T("请输入正确的板号!\nPlease input the correct NUM!"));
+						MessageBox(_T("请输入正确的板号!\nPlease input the correct NUM!"), _T(""));
 						return;
 					}
 				}
@@ -676,7 +676,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 						}
 					}
 					else{
-						MessageBox(_T("超出范围\nout of range!"));
+						MessageBox(_T("超出范围\nout of range!"), _T(""));
 						return;
 					}
 				}
@@ -690,20 +690,20 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else{
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else{
 				UpdateData(TRUE);
 				if (m_ipaddress.IsBlank())
 				{
-					MessageBox(_T("请输入IP!\nPlease input IP!"));
+					MessageBox(_T("请输入IP!\nPlease input IP!"), _T(""));
 					return;
 				}
 				else{
@@ -768,13 +768,13 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else{
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else{
@@ -844,49 +844,49 @@ void Cserialport::OnBnClickedWriteboardnum()
 											}
 											else
 											{
-												MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+												MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 												return;
 											}
 										}
 										else
 										{
-											MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+											MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 											return;
 										}
 									}
 									else
 									{
-										MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+										MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 										return;
 									}
 								}
 								else
 								{
-									MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+									MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 									return;
 								}
 							}
 							else
 							{
-								MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+								MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 								return;
 							}
 						}
 						else
 						{
-							MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+							MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 							return;
 						}
 					}
 					else
 					{
-						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 						return;
 					}
 				}
 				else
 				{
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 			}
@@ -915,7 +915,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加控件通知处理程序代码
 		if (processcount != 0 && processcount != 288)
 		{
-			MessageBox(_T("串口正忙，请等待!\nSerial port is busy,please wait!"));
+			MessageBox(_T("串口正忙，请等待!\nSerial port is busy,please wait!"), _T(""));
 			return;
 		}
 		else{
@@ -935,13 +935,13 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else{
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else{
@@ -964,11 +964,11 @@ void Cserialport::OnBnClickedWriteboardnum()
 				UpdateData(FALSE);
 				if (Recv == Recv_ZL)
 				{
-					MessageBox(_T("复位成功!\nReset successfully!"));
+					MessageBox(_T("复位成功!\nReset successfully!"), _T(""));
 				}
 				else
 				{
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 			}
@@ -982,14 +982,14 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 	
 		else{
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else{
@@ -1025,13 +1025,13 @@ void Cserialport::OnBnClickedWriteboardnum()
 					}
 					else
 					{
-						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 						return;
 					}
 				}
 				else
 				{
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 			}
@@ -1044,13 +1044,13 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else{
 			if (processcount!=0&&processcount!=288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else{
@@ -1080,11 +1080,11 @@ void Cserialport::OnBnClickedWriteboardnum()
 				UpdateData(FALSE);
 				if (Recv == Recv_ZL)
 				{
-					MessageBox(_T("阈值写入成功!\nWrite threshold successfully!"));
+					MessageBox(_T("阈值写入成功!\nWrite threshold successfully!"), _T(""));
 				}
 				else
 				{
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 			}
@@ -1097,24 +1097,24 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO:  在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}	
 		else{	
 			UpdateData(TRUE);
 			if (switchflag == false && (m_typeofdata == 0 || m_typeofdata == 2))
 			{
-				MessageBox(_T("没有权限!\nNo permission!"));
+				MessageBox(_T("没有权限!\nNo permission!"), _T(""));
 				return;
 			}
 			if (filepathstr=="" && (m_typeofdata == 0|| m_typeofdata == 2))
 			{
-				MessageBox(_T("请选取文件!\nTXT file needed!"));
+				MessageBox(_T("请选取文件!\nTXT file needed!"), _T(""));
 				return;
 			}
 			if ((m_typeofdata == 2 && filetype == 2) || (m_typeofdata == 0 && filetype == 1))
 			{
-				MessageBox(_T("请选择正确的文件!\nPlease choose correct file!"));
+				MessageBox(_T("请选择正确的文件!\nPlease choose correct file!"), _T(""));
 				CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
 				Stopsenddata->EnableWindow(FALSE);
 				KillTimer(1);
@@ -1338,13 +1338,13 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO: 在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else {
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else {
@@ -1364,14 +1364,14 @@ void Cserialport::OnBnClickedWriteboardnum()
 				}
 				if (IDOK == ret)
 				{
-					if (dlg.m_password != _T("333333")&& dlg.m_password != _T(""))
+					if (dlg.m_password != _T("raycan")&& dlg.m_password != _T(""))
 					{
-						MessageBox(_T("密码错误!\nWrong Password!"));
+						MessageBox(_T("密码错误!\nWrong Password!"), _T(""));
 						return;
 					}
 					if (dlg.m_password == _T(""))
 					{
-						MessageBox(_T("请输入密码!\nNo Password!"));
+						MessageBox(_T("请输入密码!\nNo Password!"), _T(""));
 						return;
 					}
 				}
@@ -1396,18 +1396,18 @@ void Cserialport::OnBnClickedWriteboardnum()
 					switchflag = true;
 					CButton *permit = (CButton *)GetDlgItem(IDC_PERMIT);
 					permit->SetWindowText(_T("关闭权限(unpermit)"));
-					MessageBox(_T("获取权限成功!\nGet permission successfully!"));
+					MessageBox(_T("获取权限成功!\nGet permission successfully!"), _T(""));
 				}
 				else if (Recv == Recv_ZL&&switchflag == true)
 				{
 					switchflag = false;
 					CButton *permit = (CButton *)GetDlgItem(IDC_PERMIT);
 					permit->SetWindowText(_T("开放权限(permit)"));
-					MessageBox(_T("关闭权限成功!\nGet permission successfully!"));
+					MessageBox(_T("关闭权限成功!\nGet permission successfully!"), _T(""));
 				}
 				else
 				{
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 			}
@@ -1420,7 +1420,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 		UpdateData(TRUE);
 		if (m_typeofdata == 1)
 		{
-			MessageBox(_T("不需要读取文件!\nThere is no need to open a file!"));
+			MessageBox(_T("不需要读取文件!\nThere is no need to open a file!"), _T(""));
 			return;
 		}
 		TCHAR szFilter[] = _T("TXT(*.txt)|*.txt||");
@@ -1520,25 +1520,25 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO: 在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else {
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else {
 				UpdateData(TRUE);
 				if (switchflag == false)
 				{
-					MessageBox(_T("没有权限!\nNo permission!"));
+					MessageBox(_T("没有权限!\nNo permission!"), _T(""));
 					return;
 				}
 				if (m_maxbin1.IsEmpty()&& m_maxbin2.IsEmpty()&& m_maxbin3.IsEmpty())
 				{
-					MessageBox(_T("请输入MAXBIN!\nPlease input MAXBIN!"));
+					MessageBox(_T("请输入MAXBIN!\nPlease input MAXBIN!"), _T(""));
 					return;
 				}
 				else {
@@ -1582,7 +1582,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 						}
 					}
 					else {
-						MessageBox(_T("超出范围!\nout of range!"));
+						MessageBox(_T("超出范围!\nout of range!"), _T(""));
 					}
 				}
 			}
@@ -1595,13 +1595,13 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO: 在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else {
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else {
@@ -1661,37 +1661,37 @@ void Cserialport::OnBnClickedWriteboardnum()
 									}
 									else
 									{
-										MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+										MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 										return;
 									}
 								}
 								else
 								{
-									MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+									MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 									return;
 								}
 							}
 							else
 							{
-								MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+								MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 								return;
 							}
 						}
 						else
 						{
-							MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+							MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 							return;
 						}
 					}
 					else
 					{
-						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 						return;
 					}
 				}
 				else
 				{
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 
@@ -1705,13 +1705,13 @@ void Cserialport::OnBnClickedWriteboardnum()
 		// TODO: 在此添加控件通知处理程序代码
 		if (hCom == INVALID_HANDLE_VALUE || m_commport.GetCount() == 0 || flag_Initialization == false)
 		{
-			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"));
+			MessageBox(_T("串口未初始化!\nSerial port is not initialized!"), _T(""));
 			return;
 		}
 		else {
 			if (processcount != 0 && processcount != 288)
 			{
-				MessageBox(_T("串口正忙!\nSerial port is busy!"));
+				MessageBox(_T("串口正忙!\nSerial port is busy!"), _T(""));
 				return;
 			}
 			else {
@@ -1756,7 +1756,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 					{
 						m_boardnum = "null";
 						UpdateData(FALSE);
-						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+						MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 						return;
 					}
 				}
@@ -1764,7 +1764,7 @@ void Cserialport::OnBnClickedWriteboardnum()
 				{
 					m_boardnum = "null";
 					UpdateData(FALSE);
-					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"));
+					MessageBox(_T("接收的解析指令异常，请核查硬件或串口号!\nunexpected command received，please check!"), _T(""));
 					return;
 				}
 
