@@ -113,6 +113,7 @@ BEGIN_MESSAGE_MAP(Cserialport, CDialogEx)
 	ON_BN_CLICKED(IDC_WRITEMAXBIN, &Cserialport::OnBnClickedWritemaxbin)
 	ON_BN_CLICKED(IDC_READMAXBIN, &Cserialport::OnBnClickedReadmaxbin)
 	ON_BN_CLICKED(IDC_R_VERSION, &Cserialport::OnBnClickedRVersion)
+	ON_BN_CLICKED(IDC_FLUSH, &Cserialport::OnBnClickedFlush)
 END_MESSAGE_MAP()
 
 
@@ -187,7 +188,7 @@ BOOL Cserialport::OnInitDialog()
 	m_baudrate.SetItemData(8, 57600);
 	m_baudrate.AddString(_T("115200"));	
 	m_baudrate.SetItemData(9, 115200);
-	m_baudrate.SetCurSel(5);
+	m_baudrate.SetCurSel(9);
 
 	//设置校验位下拉列表
 	m_paritybit.ResetContent();
@@ -898,10 +899,6 @@ void Cserialport::OnBnClickedWriteboardnum()
 		CDialogEx::OnDestroy();
 
 		// TODO:  在此处添加消息处理程序代码
-		/*	if (hCom != NULL && hCom != INVALID_HANDLE_VALUE)
-			{
-			CloseHandle(hCom);
-			}	*/
 		//保存ini各项值
 		UpdateData(TRUE);
 		Cini::WriteString(_T("Threshold"), _T("Threshold1"), m_threshold1, _T("raycan.ini"));
@@ -1142,48 +1139,48 @@ void Cserialport::OnBnClickedWriteboardnum()
 	void Cserialport::OnTimer(UINT_PTR nIDEvent)
 	{
 		// TODO:  在此添加消息处理程序代码和/或调用默认值
-		UpdateData(TRUE);
-		int factor;
-		if (m_typeofdata==1||m_typeofdata==2)
-		{
-			factor = 1;
-		}
-		else {
-			factor = 2;
-		}
-		int m_nPos = (int)((processcount * 100) / (288*factor) + 0.5);
-		m_progressctrl.SetPos(m_nPos);
-		m_percent.Format(_T("%d"), m_nPos);
-		m_percent += '%';
-		this->SetDlgItemText(IDC_PERCENT, m_percent);
-		
-		if (processcount == 288|| processcount == 576)
-		{
-			m_recview.SetWindowText(_T(""));
-			m_recview.SetSel(-1, -1); //自动滚屏 
-			m_recview.ReplaceSel(viewStr + "\r\n"); //自动换行 
-			UpdateData(true);
-			viewStr = "";
-			m_recvcount = "";
-			m_recvcount.Format(_T("%d"),viewcount.GetLength()/12);
-			viewcount = "";
-			if (processcount == 288)
+			UpdateData(TRUE);
+			int factor;
+			if (m_typeofdata == 1 || m_typeofdata == 2)
 			{
-				m_recvcount += "/288";
+				factor = 1;
 			}
 			else {
-				m_recvcount += "/576";
-			}			
-			UpdateData(FALSE);			
-			processcount = 0;
-			m_percent = _T("完成\nDone");
+				factor = 2;
+			}
+			int m_nPos = (int)((processcount * 100) / (288 * factor) + 0.5);
+			m_progressctrl.SetPos(m_nPos);
+			m_percent.Format(_T("%d"), m_nPos);
+			m_percent += '%';
 			this->SetDlgItemText(IDC_PERCENT, m_percent);
-			KillTimer(1);
-			CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
-			SendData->EnableWindow(TRUE);
-			CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
-			Stopsenddata->EnableWindow(FALSE);
-		}	
+
+			if (processcount == 288 || processcount == 576)
+			{
+				m_recview.SetWindowText(_T(""));
+				m_recview.SetSel(-1, -1); //自动滚屏 
+				m_recview.ReplaceSel(viewStr + "\r\n"); //自动换行 
+				UpdateData(true);
+				viewStr = "";
+				m_recvcount = "";
+				m_recvcount.Format(_T("%d"), viewcount.GetLength() / 12);
+				viewcount = "";
+				if (processcount == 288)
+				{
+					m_recvcount += "/288";
+				}
+				else {
+					m_recvcount += "/576";
+				}
+				UpdateData(FALSE);
+				processcount = 0;
+				m_percent = _T("完成\nDone");
+				this->SetDlgItemText(IDC_PERCENT, m_percent);
+				KillTimer(1);
+				CButton *SendData = (CButton *)GetDlgItem(IDC_SENDDATA);
+				SendData->EnableWindow(TRUE);
+				CButton *Stopsenddata = (CButton *)GetDlgItem(IDC_STOP);
+				Stopsenddata->EnableWindow(FALSE);
+			}
 		CDialogEx::OnTimer(nIDEvent);
 	}
 
@@ -1445,7 +1442,6 @@ void Cserialport::OnBnClickedWriteboardnum()
 					{
 						m_sample_data += m_strline;
 					}
-					//int n = m_sample_data.Replace('\t', '|');
 					if (m_sample_data.Replace('\t', '|') == 576)
 					{
 						filetype = 2;
@@ -1488,9 +1484,9 @@ void Cserialport::OnBnClickedWriteboardnum()
 					}
 					for (int i = 0;i < 72 * 8;i++)
 					{
-						m_sample_data.Left(m_sample_data.Find('\t'));
-						temp[i] = _ttoi(m_sample_data.Left(m_sample_data.Find('\t')));
-						m_sample_data = m_sample_data.Right(m_sample_data.GetLength() - m_sample_data.Find('\t') - 1);
+						m_sample_data.Left(m_sample_data.Find('|'));
+						temp[i] = _ttoi(m_sample_data.Left(m_sample_data.Find('|')));
+						m_sample_data = m_sample_data.Right(m_sample_data.GetLength() - m_sample_data.Find('|') - 1);
 					}
 					for (int i = 0; i < 72; i++)
 					{
@@ -1770,4 +1766,36 @@ void Cserialport::OnBnClickedWriteboardnum()
 
 			}
 		}
+	}
+
+
+	void Cserialport::OnBnClickedFlush()
+	{
+		// TODO: 在此添加控件通知处理程序代码
+		//获取可用串口
+		CString  strCom, strComOpen;
+		int  nCom = 0;
+		int  count = 0;
+		HANDLE    hCom_;
+
+		m_commport.ResetContent();
+		do
+		{
+			nCom++;
+			strCom.Format(_T("COM%d"), nCom);
+			strComOpen.Format(_T("\\\\.\\COM%d"), nCom);
+			hCom_ = CreateFile(strComOpen, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+				OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+			if (INVALID_HANDLE_VALUE == hCom_)
+			{
+				DWORD error = ::GetLastError();//取得错误信息 
+			}
+			else
+			{
+				m_commport.AddString(strCom);
+				count++;
+			}
+			CloseHandle(hCom_);
+		} while (nCom < 256);
+		m_commport.SetCurSel(0);
 	}

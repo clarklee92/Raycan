@@ -157,7 +157,7 @@ bool Ccalibration::OnSaveas()
 
 void Ccalibration::Recv()
 {
-	Sleep(800);
+	Sleep(1000);
 	InitSocket();
 	LARGE_INTEGER litmp;
 	LONGLONG QPart1, QPart2;
@@ -215,6 +215,7 @@ void Ccalibration::Recv()
 			MessageBox(_T("抓包完成!\nCapture complete!"), _T(""));
 			break;
 		}
+		packetcount++;
 		QueryPerformanceCounter(&litmp);         //获取开始计数值
 		QPart1 = litmp.QuadPart;
 		FD_ZERO(&readfds);
@@ -254,7 +255,6 @@ void Ccalibration::Recv()
 		IP[3] = addrFrom.sin_addr.S_un.S_un_b.s_b4;
 		myFile.Write(IP, 4);
 		myFile.Write(recvBuf, 1154);
-		packetcount++;
 
 		QueryPerformanceCounter(&litmp);        //获取结束计数值
 		QPart2 = litmp.QuadPart;
@@ -411,7 +411,7 @@ DWORD WINAPI Ccalibration::Stopbysize(LPVOID lpParameter)
 			break;
 		}
 		i--;
-	}
+    }
 	return 0;
 }
 

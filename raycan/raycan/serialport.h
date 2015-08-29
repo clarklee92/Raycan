@@ -123,4 +123,5 @@ public:
 	CString m_threshold2;
 	CString m_threshold3;
 	CString m_threshold4;
+	afx_msg void OnBnClickedFlush();
 };
